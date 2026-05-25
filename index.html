@@ -157,24 +157,24 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalTutorial" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalTutorial" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalTutorialLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title fw-bold">📖 Como usar o Gerenciador de Equipamentos</h5>
+        <h5 class="modal-title fw-bold" id="modalTutorialLabel">📖 Como usar o Gerenciador de Equipamentos</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p class="lead">Bem-vindo(a) ao sistema inteligente de distribuição de notebooks.</p>
         <ol class="list-group list-group-numbered">
-            <li class="list-group-item"><strong>Identificação (Passo 1):</strong> Insira o nome da sua escola para personalizar o arquivo.</li>
-            <li class="list-group-item"><strong>Configure os Carrinhos (Passo 2):</strong> Diga quantas estações você tem e as notebooks de cada uma.</li>
+            <li class="list-group-item"><strong>Identificação (Passo 1):</strong> Insira o nome da sua escola para personalizar o arquivo e atualizar automaticamente o nome do salvamento.</li>
+            <li class="list-group-item"><strong>Configure os Carrinhos (Passo 2):</strong> Diga quantas estações você tem e os notebooks de cada uma.</li>
             <li class="list-group-item"><strong>Crie a Escola (Passo 3):</strong> Selecione o modelo e quantidade de alunos em cada sala.</li>
             <li class="list-group-item"><strong>Monte a Grade (Passo 4):</strong> Preencha o horário de aulas das turmas.</li>
             <li class="list-group-item"><strong>Regras de Uso (Passo 5):</strong> Insira as disciplinas, a prioridade e a cota semanal.</li>
-            <li class="list-group-item"><strong>Visualizar e Salvar (Passo 6):</strong> Veja o resultado na tela e baixe o PDF.</li>
+            <li class="list-group-item"><strong>Visualizar e Salvar (Passo 6):</strong> Veja o resultado na tela e baixe o PDF. O algoritmo otimiza o uso do fim para o começo da semana!</li>
         </ol>
-        <div class="mt-3 alert alert-info mb-0"><strong>Dica de Ouro:</strong> Salve seu progresso clicando em <strong>💾 Salvar</strong> no topo!</div>
+        <div class="mt-3 alert alert-info mb-0"><strong>Dica de Ouro:</strong> Salve seu progresso clicando em <strong>💾 Salvar</strong> no topo para não perder seus dados!</div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal">Entendi, vamos começar!</button>
@@ -210,26 +210,32 @@
     let prioridadesInfo = []; 
     let dadosParaPDF = { dias: {}, auditoria: [] };
 
+    // Executado ao abrir a página
     window.onload = () => {
         gerarCamposEstacoes();
+        
+        // Alimenta o select do Passo 5
         const select = document.getElementById('selectDisciplinaPrioridade');
+        select.innerHTML = '';
         componentes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
 
+        // Força a exibição do Tutorial Pop-up removendo travas de cache
         const modalElement = document.getElementById('modalTutorial');
-        const tutorialModal = new bootstrap.Modal(modalElement);
-        if (!localStorage.getItem('tutorialNotebooksVisto')) {
+        if (modalElement) {
+            const tutorialModal = new bootstrap.Modal(modalElement);
             tutorialModal.show();
-            localStorage.setItem('tutorialNotebooksVisto', 'true');
         }
     };
 
     function abrirTutorial() {
-        new bootstrap.Modal(document.getElementById('modalTutorial')).show();
+        const modalElement = document.getElementById('modalTutorial');
+        if(modalElement) {
+            const m = new bootstrap.Modal(modalElement);
+            m.show();
+        }
     }
 
-    // NOVA FUNÇÃO: Atualiza o nome do arquivo com base no nome da escola
     function atualizarNomeArquivoAutomatico(nomeEscola) {
-        // Remove caracteres que os sistemas operacionais rejeitam em nomes de arquivos
         let nomeSeguro = nomeEscola.trim().replace(/[\/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
         document.getElementById('nomeArquivoJSON').value = nomeSeguro || "projeto_notebooks";
     }
@@ -386,7 +392,6 @@
                 turmas = app.turmas || []; 
                 prioridadesInfo = app.prioridadesInfo || [];
                 
-                // Restaura o nome da escola se houver no JSON
                 if(app.nomeEscola) {
                     document.getElementById('nomeEscola').value = app.nomeEscola;
                 }
